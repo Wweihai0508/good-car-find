@@ -1,0 +1,30 @@
+{
+  "name": "used-car-showroom-system",
+  "version": "1.0.0",
+  "description": "二手车展厅管理系统 - 完整的前后端解决方案",
+  "main": "index.js",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "start:backend": "cd backend && npm start",
+    "setup:db": "mysql -u root -p < database/init.sql",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "npm run build:frontend",
+    "clean": "rm -rf frontend/dist && rm -rf backend/node_modules && rm -rf frontend/node_modules"
+  },
+  "keywords": [
+    "used-car",
+    "showroom",
+    "vue",
+    "nodejs",
+    "mysql",
+    "ai"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

@@ -1,0 +1,27 @@
+
+{
+  "name": "used-car-backend",
+  "version": "1.0.0",
+  "description": "二手车展厅管理系统后端API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "dev:clean": "npx kill-port 3000 && nodemon server.js",
+    "kill-port": "npx kill-port 3000"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.32.5",
+    "mysql2": "^3.6.0",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "axios": "^1.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
