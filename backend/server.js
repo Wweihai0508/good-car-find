@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { testConnection } = require('./config/database');
+const { initDatabase } = require('./initDatabase');
 const carRoutes = require('./routes/cars');
 const recommendationRoutes = require('./routes/recommendations');
 const popularRoutes = require('./routes/popular');
@@ -77,6 +78,7 @@ const killPort = async (port) => {
 const startServer = async () => {
   try {
     await testConnection();
+    await initDatabase();
     
     app.listen(PORT, () => {
       console.log('=================================');
