@@ -9,24 +9,18 @@
       }
     }
   ],
-  "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://your-railway-backend-url.railway.app/api/:path*"
+      "destination": "https://good-car-find-production.up.railway.app/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "https://your-railway-backend-url.railway.app/uploads/:path*"
+      "destination": "https://good-car-find-production.up.railway.app/uploads/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
