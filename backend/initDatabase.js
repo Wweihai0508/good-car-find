@@ -54,6 +54,49 @@ const initDatabase = async () => {
 
     console.log(`📊 共解析出 ${statements.length} 条SQL语句`);
 
+    // 直接执行创建cars表的SQL语句，确保表被创建
+    try {
+      console.log('🔄 直接执行创建cars表的SQL语句...');
+      const createCarsTableSQL = `
+        CREATE TABLE IF NOT EXISTS cars (
+          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '车辆ID',
+          brand VARCHAR(100) NOT NULL COMMENT '品牌',
+          model VARCHAR(100) NOT NULL COMMENT '型号',
+          year INT NOT NULL COMMENT '年份',
+          mileage INT COMMENT '里程（公里）',
+          price DECIMAL(10, 2) NOT NULL COMMENT '价格',
+          color VARCHAR(50) COMMENT '颜色',
+          fuel_type ENUM('汽油', '柴油', '电动', '混合动力') COMMENT '燃料类型',
+          transmission ENUM('手动', '自动', '双离合', 'CVT') COMMENT '变速箱类型',
+          engine VARCHAR(100) COMMENT '发动机',
+          description TEXT COMMENT '车辆描述',
+          status ENUM('available', 'sold', 'reserved') DEFAULT 'available' COMMENT '状态：available-在售，sold-已售，reserved-已预订',
+          vin VARCHAR(17) COMMENT '车辆识别码',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+          INDEX idx_brand (brand),
+          INDEX idx_model (model),
+          INDEX idx_year (year),
+          INDEX idx_price (price),
+          INDEX idx_status (status),
+          INDEX idx_vin (vin)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='车辆表'
+      `;
+      await pool.query(createCarsTableSQL);
+      console.log('✅ 成功创建cars表');
+    } catch (error) {
+      console.error('❌ 创建cars表失败:', error.message);
+    }
+
+    // 检查railway数据库中的表
+    try {
+      console.log('🔄 检查railway数据库中的表...');
+      const result = await pool.query('SHOW TABLES');
+      console.log('✅ 数据库中的表:', result[0].map(row => Object.values(row)[0]).join(', '));
+    } catch (error) {
+      console.error('❌ 检查数据库表失败:', error.message);
+    }
+
     let successCount = 0;
     let errorCount = 0;
 
@@ -73,6 +116,15 @@ const initDatabase = async () => {
           errorCount++;
         }
       }
+    }
+
+    // 再次检查railway数据库中的表
+    try {
+      console.log('🔄 再次检查railway数据库中的表...');
+      const result = await pool.query('SHOW TABLES');
+      console.log('✅ 数据库中的表:', result[0].map(row => Object.values(row)[0]).join(', '));
+    } catch (error) {
+      console.error('❌ 检查数据库表失败:', error.message);
     }
 
     console.log(`📊 数据库初始化执行结果: 成功 ${successCount} 条, 失败 ${errorCount} 条`);
