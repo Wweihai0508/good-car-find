@@ -116,7 +116,7 @@ const initDatabase = async () => {
         CREATE TABLE IF NOT EXISTS car_images (
           id INT AUTO_INCREMENT PRIMARY KEY COMMENT '图片ID',
           car_id INT NOT NULL COMMENT '车辆ID',
-          image_url VARCHAR(255) NOT NULL COMMENT '图片URL',
+          url VARCHAR(255) NOT NULL COMMENT '图片URL',
           is_main BOOLEAN DEFAULT FALSE COMMENT '是否为主图',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
           INDEX idx_car_id (car_id),
@@ -125,6 +125,24 @@ const initDatabase = async () => {
       `;
       await pool.query(createCarImagesTableSQL);
       console.log('✅ 成功创建car_images表');
+      
+      // 插入车辆图片数据
+      try {
+        console.log('🔄 插入车辆图片数据...');
+        const insertCarImagesSQL = `
+          INSERT IGNORE INTO car_images (car_id, url, is_main) VALUES
+          (1, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Toyota Corolla 2020 white car&size=800x600', 1),
+          (1, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Toyota Corolla 2020 interior&size=800x600', 0),
+          (2, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Honda Civic 2019 black car&size=800x600', 1),
+          (2, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Honda Civic 2019 interior&size=800x600', 0),
+          (3, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Volkswagen Passat 2021 silver car&size=800x600', 1),
+          (3, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Volkswagen Passat 2021 interior&size=800x600', 0)
+        `;
+        const result = await pool.query(insertCarImagesSQL);
+        console.log(`✅ 插入车辆图片数据成功，影响行数：${result[0].affectedRows}`);
+      } catch (error) {
+        console.error('❌ 插入车辆图片数据失败:', error.message);
+      }
       
       // 创建订单表
       const createOrdersTableSQL = `
