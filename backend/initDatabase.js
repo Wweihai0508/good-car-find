@@ -183,7 +183,73 @@ const initDatabase = async () => {
       await pool.query(createReviewsTableSQL);
       console.log('✅ 成功创建reviews表');
       
+      // 创建推荐车辆表
+      const createRecommendationsTableSQL = `
+        CREATE TABLE IF NOT EXISTS recommendations (
+          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '推荐ID',
+          car_id INT NOT NULL COMMENT '车辆ID',
+          priority INT DEFAULT 1 COMMENT '优先级',
+          status ENUM('active', 'inactive') DEFAULT 'active' COMMENT '状态：active-激活，inactive-未激活',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+          INDEX idx_car_id (car_id),
+          INDEX idx_priority (priority),
+          INDEX idx_status (status),
+          UNIQUE KEY idx_unique_car (car_id),
+          FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='推荐车辆表'
+      `;
+      await pool.query(createRecommendationsTableSQL);
+      console.log('✅ 成功创建recommendations表');
+      
+      // 创建热门车辆表
+      const createPopularCarsTableSQL = `
+        CREATE TABLE IF NOT EXISTS popular_cars (
+          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '热门ID',
+          car_id INT NOT NULL COMMENT '车辆ID',
+          views INT DEFAULT 0 COMMENT '浏览次数',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+          INDEX idx_car_id (car_id),
+          INDEX idx_views (views),
+          UNIQUE KEY idx_unique_car (car_id),
+          FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='热门车辆表'
+      `;
+      await pool.query(createPopularCarsTableSQL);
+      console.log('✅ 成功创建popular_cars表');
+      
       console.log('✅ 所有必要表创建完成');
+      
+      // 插入推荐车辆数据
+      try {
+        console.log('🔄 插入推荐车辆数据...');
+        const insertRecommendationsSQL = `
+          INSERT IGNORE INTO recommendations (car_id, priority, status) VALUES
+          (1, 1, 'active'),
+          (2, 2, 'active'),
+          (3, 3, 'active')
+        `;
+        const result = await pool.query(insertRecommendationsSQL);
+        console.log(`✅ 插入推荐车辆数据成功，影响行数：${result[0].affectedRows}`);
+      } catch (error) {
+        console.error('❌ 插入推荐车辆数据失败:', error.message);
+      }
+      
+      // 插入热门车辆数据
+      try {
+        console.log('🔄 插入热门车辆数据...');
+        const insertPopularCarsSQL = `
+          INSERT IGNORE INTO popular_cars (car_id, views) VALUES
+          (1, 100),
+          (2, 90),
+          (3, 80)
+        `;
+        const result = await pool.query(insertPopularCarsSQL);
+        console.log(`✅ 插入热门车辆数据成功，影响行数：${result[0].affectedRows}`);
+      } catch (error) {
+        console.error('❌ 插入热门车辆数据失败:', error.message);
+      }
     } catch (error) {
       console.error('❌ 创建表失败:', error.message);
     }
