@@ -53,10 +53,36 @@ const initDatabase = async () => {
       .filter(s => s.length > 0 && !s.startsWith('--'));
 
     console.log(`📊 共解析出 ${statements.length} 条SQL语句`);
+    
+    // 显示解析出的前几条SQL语句，用于调试
+    for (let i = 0; i < Math.min(statements.length, 5); i++) {
+      const statement = statements[i];
+      const preview = statement.substring(0, 50) + (statement.length > 50 ? '...' : '');
+      console.log(`ℹ️  SQL语句 ${i + 1} 预览: ${preview}`);
+    }
 
-    // 直接执行创建cars表的SQL语句，确保表被创建
+    // 直接执行创建所有必要表的SQL语句，确保表被创建
     try {
-      console.log('🔄 直接执行创建cars表的SQL语句...');
+      console.log('🔄 直接执行创建所有必要表的SQL语句...');
+      
+      // 创建用户表
+      const createUsersTableSQL = `
+        CREATE TABLE IF NOT EXISTS users (
+          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '用户ID',
+          username VARCHAR(100) NOT NULL UNIQUE COMMENT '用户名',
+          password VARCHAR(255) NOT NULL COMMENT '密码',
+          email VARCHAR(100) NOT NULL UNIQUE COMMENT '邮箱',
+          phone VARCHAR(20) COMMENT '电话',
+          role ENUM('admin', 'user') DEFAULT 'user' COMMENT '角色：admin-管理员，user-普通用户',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+          INDEX idx_role (role)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表'
+      `;
+      await pool.query(createUsersTableSQL);
+      console.log('✅ 成功创建users表');
+      
+      // 创建车辆表
       const createCarsTableSQL = `
         CREATE TABLE IF NOT EXISTS cars (
           id INT AUTO_INCREMENT PRIMARY KEY COMMENT '车辆ID',
@@ -84,19 +110,96 @@ const initDatabase = async () => {
       `;
       await pool.query(createCarsTableSQL);
       console.log('✅ 成功创建cars表');
+      
+      // 创建车辆图片表
+      const createCarImagesTableSQL = `
+        CREATE TABLE IF NOT EXISTS car_images (
+          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '图片ID',
+          car_id INT NOT NULL COMMENT '车辆ID',
+          image_url VARCHAR(255) NOT NULL COMMENT '图片URL',
+          is_main BOOLEAN DEFAULT FALSE COMMENT '是否为主图',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+          INDEX idx_car_id (car_id),
+          FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='车辆图片表'
+      `;
+      await pool.query(createCarImagesTableSQL);
+      console.log('✅ 成功创建car_images表');
+      
+      // 创建订单表
+      const createOrdersTableSQL = `
+        CREATE TABLE IF NOT EXISTS orders (
+          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '订单ID',
+          user_id INT NOT NULL COMMENT '用户ID',
+          car_id INT NOT NULL COMMENT '车辆ID',
+          order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '订单日期',
+          status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending' COMMENT '订单状态：pending-待处理，completed-已完成，cancelled-已取消',
+          total_price DECIMAL(10, 2) NOT NULL COMMENT '总价',
+          payment_method VARCHAR(50) COMMENT '支付方式',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+          INDEX idx_user_id (user_id),
+          INDEX idx_car_id (car_id),
+          INDEX idx_status (status),
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表'
+      `;
+      await pool.query(createOrdersTableSQL);
+      console.log('✅ 成功创建orders表');
+      
+      // 创建收藏表
+      const createFavoritesTableSQL = `
+        CREATE TABLE IF NOT EXISTS favorites (
+          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '收藏ID',
+          user_id INT NOT NULL COMMENT '用户ID',
+          car_id INT NOT NULL COMMENT '车辆ID',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '收藏时间',
+          UNIQUE KEY idx_user_car (user_id, car_id),
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收藏表'
+      `;
+      await pool.query(createFavoritesTableSQL);
+      console.log('✅ 成功创建favorites表');
+      
+      // 创建评价表
+      const createReviewsTableSQL = `
+        CREATE TABLE IF NOT EXISTS reviews (
+          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '评价ID',
+          user_id INT NOT NULL COMMENT '用户ID',
+          car_id INT NOT NULL COMMENT '车辆ID',
+          rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5) COMMENT '评分：1-5星',
+          comment TEXT COMMENT '评价内容',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '评价时间',
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+          INDEX idx_user_id (user_id),
+          INDEX idx_car_id (car_id),
+          INDEX idx_rating (rating),
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='评价表'
+      `;
+      await pool.query(createReviewsTableSQL);
+      console.log('✅ 成功创建reviews表');
+      
+      console.log('✅ 所有必要表创建完成');
     } catch (error) {
-      console.error('❌ 创建cars表失败:', error.message);
+      console.error('❌ 创建表失败:', error.message);
     }
 
     // 检查railway数据库中的表
     try {
       console.log('🔄 检查railway数据库中的表...');
       const result = await pool.query('SHOW TABLES');
-      console.log('✅ 数据库中的表:', result[0].map(row => Object.values(row)[0]).join(', '));
+      const tables = result[0].map(row => Object.values(row)[0]);
+      console.log('✅ 数据库中的表:', tables.join(', '));
+      console.log(`✅ 共找到 ${tables.length} 个表`);
     } catch (error) {
       console.error('❌ 检查数据库表失败:', error.message);
     }
 
+    // 执行解析出的SQL语句
     let successCount = 0;
     let errorCount = 0;
 
@@ -122,9 +225,37 @@ const initDatabase = async () => {
     try {
       console.log('🔄 再次检查railway数据库中的表...');
       const result = await pool.query('SHOW TABLES');
-      console.log('✅ 数据库中的表:', result[0].map(row => Object.values(row)[0]).join(', '));
+      const tables = result[0].map(row => Object.values(row)[0]);
+      console.log('✅ 数据库中的表:', tables.join(', '));
+      console.log(`✅ 共找到 ${tables.length} 个表`);
+      
+      // 检查cars表是否存在
+      if (tables.includes('cars')) {
+        console.log('✅ cars表存在！');
+        // 检查cars表的结构
+        const carStructure = await pool.query('DESCRIBE cars');
+        console.log(`✅ cars表结构检查：共 ${carStructure[0].length} 个字段`);
+      } else {
+        console.error('❌ cars表不存在！');
+      }
+      
     } catch (error) {
       console.error('❌ 检查数据库表失败:', error.message);
+    }
+    
+    // 插入测试数据
+    try {
+      console.log('🔄 插入测试数据...');
+      const insertTestDataSQL = `
+        INSERT IGNORE INTO cars (brand, model, year, mileage, price, color, fuel_type, transmission, engine, description, status) VALUES
+        ('丰田', '卡罗拉', 2020, 30000, 120000.00, '白色', '汽油', '自动', '1.2T', '丰田卡罗拉，省油耐用，家用首选', 'available'),
+        ('本田', '思域', 2019, 40000, 110000.00, '黑色', '汽油', '自动', '1.5T', '本田思域，运动感强，动力充沛', 'available'),
+        ('大众', '帕萨特', 2021, 20000, 150000.00, '银色', '汽油', '自动', '2.0T', '大众帕萨特，商务首选，空间宽敞', 'available')
+      `;
+      const result = await pool.query(insertTestDataSQL);
+      console.log(`✅ 插入测试数据成功，影响行数：${result[0].affectedRows}`);
+    } catch (error) {
+      console.error('❌ 插入测试数据失败:', error.message);
     }
 
     console.log(`📊 数据库初始化执行结果: 成功 ${successCount} 条, 失败 ${errorCount} 条`);
