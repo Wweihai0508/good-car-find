@@ -1,10 +1,40 @@
 const { pool } = require('./config/database');
+const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
 
 const initDatabase = async () => {
   try {
     console.log('🔧 开始初始化数据库...');
+
+    // 首先创建 railway 数据库（如果不存在）
+    try {
+      console.log('🔄 创建 railway 数据库（如果不存在）...');
+      // 先使用默认数据库连接（不指定数据库名）
+      const defaultPool = mysql.createPool({
+        host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+        user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
+        password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || 'hrsoft',
+        port: process.env.MYSQLPORT || 3306,
+      });
+      
+      await defaultPool.query('CREATE DATABASE IF NOT EXISTS railway');
+      await defaultPool.end();
+      console.log('✅ railway 数据库创建成功');
+    } catch (error) {
+      console.log('⚠️ 创建数据库时出错:', error.message);
+      console.log('ℹ️ 继续尝试连接到现有数据库...');
+    }
+
+    // 确保使用 railway 数据库
+    try {
+      console.log('🔄 选择 railway 数据库...');
+      await pool.query('USE railway');
+      console.log('✅ 成功选择 railway 数据库');
+    } catch (error) {
+      console.error('❌ 选择数据库失败:', error.message);
+      throw error;
+    }
 
     const sqlPath = path.join(__dirname, 'database', 'init.sql');
     
