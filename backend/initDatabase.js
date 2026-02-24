@@ -111,6 +111,15 @@ const initDatabase = async () => {
       await pool.query(createCarsTableSQL);
       console.log('✅ 成功创建cars表');
       
+      // 先删除现有的car_images表，然后重新创建
+      try {
+        console.log('🔄 删除现有的car_images表...');
+        await pool.query('DROP TABLE IF EXISTS car_images');
+        console.log('✅ 成功删除现有的car_images表');
+      } catch (error) {
+        console.error('❌ 删除car_images表失败:', error.message);
+      }
+      
       // 创建车辆图片表
       const createCarImagesTableSQL = `
         CREATE TABLE IF NOT EXISTS car_images (
@@ -130,7 +139,7 @@ const initDatabase = async () => {
       try {
         console.log('🔄 插入车辆图片数据...');
         const insertCarImagesSQL = `
-          INSERT IGNORE INTO car_images (car_id, url, is_main) VALUES
+          INSERT INTO car_images (car_id, url, is_main) VALUES
           (1, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Toyota Corolla 2020 white car&size=800x600', 1),
           (1, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Toyota Corolla 2020 interior&size=800x600', 0),
           (2, 'https://neeko-copilot.bytedance.net/api/text2image?prompt=Honda Civic 2019 black car&size=800x600', 1),
