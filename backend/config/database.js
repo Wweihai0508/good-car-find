@@ -1,6 +1,6 @@
 const mysql = require('mysql2/promise');
 
-const pool = mysql.createPool({
+const dbConfig = {
   host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
   user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
   password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || 'hrsoft',
@@ -16,7 +16,16 @@ const pool = mysql.createPool({
   namedPlaceholders: true,
   dateStrings: false,
   connectTimeout: 10000
-});
+};
+
+console.log('📦 数据库连接配置:');
+console.log('  - 主机:', dbConfig.host);
+console.log('  - 用户名:', dbConfig.user);
+console.log('  - 密码:', dbConfig.password ? '****' : '未设置');
+console.log('  - 数据库:', dbConfig.database);
+console.log('  - 端口:', dbConfig.port);
+
+const pool = mysql.createPool(dbConfig);
 
 const testConnection = async (retries = 3) => {
   console.log('🔍 开始检查数据库连接...');
