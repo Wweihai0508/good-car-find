@@ -8,6 +8,7 @@ const fs = require('fs');
 const { testConnection } = require('./config/database');
 const { initDatabase } = require('./initDatabase');
 const carRoutes = require('./routes/cars');
+const enhancedCarRoutes = require('./routes/enhancedCars');
 const recommendationRoutes = require('./routes/recommendations');
 const popularRoutes = require('./routes/popular');
 const salesRoutes = require('./routes/sales');
@@ -30,6 +31,7 @@ if (!fs.existsSync(uploadDir)) {
 
 //路由挂载，将不同的路由模块挂载到 /api 路径下
 app.use('/api/cars', carRoutes);
+app.use('/api/enhanced-cars', enhancedCarRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/popular', popularRoutes);
 app.use('/api/sales', salesRoutes);
@@ -45,14 +47,14 @@ app.get('/api/health', (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     error: '服务器内部错误',
     message: err.message || '未知错误'
   });
 });
 
 app.use((req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
     error: '接口不存在',
     path: req.path
   });
@@ -79,7 +81,7 @@ const startServer = async () => {
   try {
     await testConnection();
     await initDatabase();
-    
+
     app.listen(PORT, () => {
       console.log('=================================');
       console.log('🚗 二手车展厅系统 API 服务启动');
