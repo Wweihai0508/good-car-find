@@ -15,8 +15,8 @@
         <span>⚙️ {{ car.transmission }}</span>
       </div>
       <div class="car-price">
-        <span class="price">￥{{ car.price.toLocaleString() }}</span>
-        <span class="original-price" v-if="car.original_price">原价 {{ car.original_price.toLocaleString() }}</span>
+        <span class="price">￥{{ car.price }}万</span>
+        <span class="original-price" v-if="car.original_price">原价 {{ car.original_price }}万</span>
       </div>
     </div>
   </div>

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:3000/api/recommendations)",
+      "Bash(curl -s http://localhost:3000/api/popular)",
+      "Bash(mysql -u root -phrsoft -e \"USE railway; SELECT id, brand, model FROM cars LIMIT 5;\")",
+      "Bash(mysql -u root -phrsoft -e \"USE railway; DESCRIBE car_images;\")"
+    ]
+  },
+  "autoApproveCommands": true,
+  "autoApproveFileChanges": true,
+  "autoApproveToolUse": true,
+  "skipConfirmations": true
+}

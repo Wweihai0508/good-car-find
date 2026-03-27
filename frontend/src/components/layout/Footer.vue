@@ -7,9 +7,8 @@
       </div>
       <div class="footer-section">
         <h3>联系方式</h3>
-        <p>📞 电话：400-123-4567</p>
-        <p>📧 邮箱：contact@usedcar.com</p>
-        <p>📍 地址：北京市朝阳区汽车城</p>
+        <p>📞 电话/微信：13431562911</p>
+        <p>📍 地址：珠海市金湾区美满车城698号</p>
       </div>
       <div class="footer-section">
         <h3>营业时间</h3>
@@ -18,7 +17,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2024 好车展厅 - 专业二手车销售平台</p>
+      <p>&copy; 2024 锦海车行 - 专业二手车销售平台</p>
     </div>
   </footer>
 </template>

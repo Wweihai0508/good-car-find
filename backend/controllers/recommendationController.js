@@ -7,8 +7,9 @@ class RecommendationController {
       const offset = (page - 1) * pageSize;
 
       const [rows] = await pool.query(
-        `SELECT r.*, c.brand, c.model, c.year, c.mileage, c.price,
-                (SELECT url FROM car_images WHERE car_id = c.id LIMIT 1) AS image
+        `SELECT r.*, c.brand, c.model, c.year, c.mileage, c.price, 
+                c.fuel_type, c.transmission, c.color, c.description, c.status,
+                (SELECT GROUP_CONCAT(url SEPARATOR ',') FROM car_images WHERE car_id = c.id) AS images
          FROM recommendations r
          JOIN cars c ON r.car_id = c.id
          ORDER BY r.priority ASC, r.created_at DESC
@@ -21,14 +22,18 @@ class RecommendationController {
       const recommendations = rows.map(item => ({
         id: item.id,
         carId: item.car_id,
-        carBrand: item.brand,
-        carModel: item.model,
+        brand: item.brand,
+        model: item.model,
         year: item.year,
         mileage: item.mileage,
         price: item.price,
+        fuel_type: item.fuel_type,
+        transmission: item.transmission,
+        color: item.color,
+        description: item.description,
+        status: item.status,
         priority: item.priority || 1,
-        status: item.status || 'active',
-        images: item.image ? [item.image] : [],
+        images: item.images ? item.images.split(',') : [],
         createdAt: item.created_at
       }));
 

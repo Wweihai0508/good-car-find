@@ -11,7 +11,7 @@ class PopularController {
                 (SELECT url FROM car_images WHERE car_id = c.id LIMIT 1) AS image
          FROM popular_cars p
          JOIN cars c ON p.car_id = c.id
-         ORDER BY p.priority ASC, p.created_at DESC
+         ORDER BY p.created_at DESC
          LIMIT ? OFFSET ?`,
         [parseInt(pageSize), parseInt(offset)]
       );
@@ -26,8 +26,6 @@ class PopularController {
         year: item.year,
         mileage: item.mileage,
         price: item.price,
-        priority: item.priority,
-        status: item.status,
         images: item.image ? [item.image] : [],
         createdAt: item.created_at,
         updatedAt: item.updated_at
@@ -47,7 +45,7 @@ class PopularController {
 
   static async addPopularCar(req, res) {
     try {
-      const { carId, priority = 1, status = 'active' } = req.body;
+      const { carId } = req.body;
 
       const [existing] = await pool.execute(
         'SELECT id FROM popular_cars WHERE car_id = ?',
@@ -59,8 +57,8 @@ class PopularController {
       }
 
       const [result] = await pool.execute(
-        'INSERT INTO popular_cars (car_id, priority, status) VALUES (?, ?, ?)',
-        [carId, priority, status]
+        'INSERT INTO popular_cars (car_id, views) VALUES (?, 0)',
+        [carId]
       );
 
       res.status(201).json({
@@ -76,11 +74,11 @@ class PopularController {
   static async updatePopularCar(req, res) {
     try {
       const { id } = req.params;
-      const { carId, priority, status } = req.body;
+      const { carId } = req.body;
 
       const [result] = await pool.execute(
-        'UPDATE popular_cars SET car_id = ?, priority = ?, status = ? WHERE id = ?',
-        [carId, priority, status, id]
+        'UPDATE popular_cars SET car_id = ? WHERE id = ?',
+        [carId, id]
       );
 
       if (result.affectedRows === 0) {

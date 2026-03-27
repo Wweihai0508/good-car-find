@@ -25,8 +25,8 @@
         <div class="car-details">
           <h1 class="car-title">{{ car.brand }} {{ car.model }}</h1>
           <div class="car-price-large">
-            <span class="price">￥{{ (car.price / 10000).toFixed(2) }}万</span>
-            <span class="price-original">原价：￥{{ ((car.original_price || car.price * 1.2) / 10000).toFixed(2) }}万</span>
+            <span class="price">￥{{ car.price }}万</span>
+            <span class="price-original">原价：￥{{ car.original_price || Math.round(car.price * 1.2) }}万</span>
           </div>
 
           <div class="car-stats">

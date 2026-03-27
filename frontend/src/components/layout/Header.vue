@@ -2,7 +2,7 @@
   <header class="header">
     <div class="header-content">
       <div class="logo">
-        <h1>🚗 好车展厅</h1>
+        <h1>🚗 锦海车行</h1>
       </div>
       <nav class="nav">
         <router-link to="/" class="nav-item">首页</router-link>
